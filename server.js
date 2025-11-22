@@ -5,39 +5,46 @@ import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 import ecopontoRoutes from "./routes/ecopontoRoutes.js";
 
-dotenv.config();
+dotenv.config(); // Carrega variáveis do .env
+
 const app = express();
 app.use(express.json());
 
 // Conexão com MongoDB
-console.log(`\nTentando conectar ao MongoDB...`);
-console.log(`MONGO_URL: ${MONGO_URL.replace(/\/\/.*@/, "//***:***@")}`);
-  
-mongoose.connect(process.env.MONGO_URL)
-.then(async () => {
-  const dbName = mongoose.connection.db.databaseName;
-  const collections = await mongoose.connection.db.listCollections().toArray();
-  const collectionNames = collections.map(c => c.name).join(", ");
-  
-  console.log("\nMongoDB conectado com sucesso!");
-  console.log(`Banco de dados: ${dbName}`);
-  console.log(`Collections existentes: ${collectionNames || "nenhuma"}`);
-  console.log(`Collection usada pelo modelo Ecoponto: ecopontos`);
-  console.log(`IMPORTANTE: Certifique-se de estar visualizando o banco "${dbName}" no MongoDB Compass!`);
-  
-  // Verificar se a collection ecopontos existe
-  const ecopontosCollection = collections.find(c => c.name === "ecopontos");
-  if (ecopontosCollection) {
-    const count = await mongoose.connection.db.collection("ecopontos").countDocuments();
-    console.log(`Documentos na collection 'ecopontos': ${count}\n`);
-  } else {
-    console.log(`Collection 'ecopontos' ainda não existe. Será criada quando o primeiro documento for salvo.\n`);
-  }
-})
-.catch(err => {
-  console.error("\nErro ao conectar MongoDB:", err);
-  console.error("Verifique se o MongoDB está rodando e se a URI está correta.\n");
-});
+const mongoUrl = process.env.MONGO_URL;
+console.log("\nTentando conectar ao MongoDB...");
+
+if (!mongoUrl) {
+  console.error("ERRO: a variável de ambiente MONGO_URL não está definida!");
+  process.exit(1); // encerra o processo se a URL não estiver definida
+}
+
+console.log(`MONGO_URL: ${mongoUrl.replace(/\/\/.*@/, "//***:***@")}`);
+
+mongoose.connect(mongoUrl)
+  .then(async () => {
+    const dbName = mongoose.connection.db.databaseName;
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionNames = collections.map(c => c.name).join(", ");
+
+    console.log("\nMongoDB conectado com sucesso!");
+    console.log(`Banco de dados: ${dbName}`);
+    console.log(`Collections existentes: ${collectionNames || "nenhuma"}`);
+    console.log(`Collection usada pelo modelo Ecoponto: ecopontos`);
+
+    const ecopontosCollection = collections.find(c => c.name === "ecopontos");
+    if (ecopontosCollection) {
+      const count = await mongoose.connection.db.collection("ecopontos").countDocuments();
+      console.log(`Documentos na collection 'ecopontos': ${count}\n`);
+    } else {
+      console.log(`Collection 'ecopontos' ainda não existe. Será criada quando o primeiro documento for salvo.\n`);
+    }
+  })
+  .catch(err => {
+    console.error("\nErro ao conectar MongoDB:", err);
+    console.error("Verifique se o MongoDB está rodando e se a URI está correta.\n");
+    process.exit(1); // encerra o processo se não conseguir conectar
+  });
 
 // Configuração do Swagger
 const swaggerOptions = {
@@ -47,15 +54,10 @@ const swaggerOptions = {
       title: "API Ecopontos",
       version: "1.0.0",
       description: "API para gerenciamento de ecopontos - pontos de coleta seletiva",
-      contact: {
-        name: "Suporte API",
-      },
+      contact: { name: "Suporte API" },
     },
     servers: [
-      {
-        url: `http://localhost:${process.env.PORT || 3000}`,
-        description: "Servidor de desenvolvimento",
-      },
+      { url: `http://localhost:${process.env.PORT || 3000}`, description: "Servidor de desenvolvimento" },
     ],
     components: {
       schemas: {
@@ -63,14 +65,10 @@ const swaggerOptions = {
           type: "object",
           required: ["nome", "endereco", "tipoResiduos"],
           properties: {
-            nome: {
-              type: "string",
-              description: "Nome do ecoponto",
-              example: "Ecoponto Central",
-            },
+            nome: { type: "string", example: "Ecoponto Central" },
             endereco: {
               type: "object",
-              required: ["rua", "numero", "bairro", "cidade", "estado", "cep"],
+              required: ["rua","numero","bairro","cidade","estado","cep"],
               properties: {
                 rua: { type: "string", example: "Rua das Flores" },
                 numero: { type: "string", example: "123" },
@@ -82,11 +80,8 @@ const swaggerOptions = {
             },
             tipoResiduos: {
               type: "array",
-              items: {
-                type: "string",
-                enum: ["papel", "plastico", "vidro", "metal", "organico", "eletronico", "pilhas", "oleo"],
-              },
-              example: ["papel", "plastico", "vidro"],
+              items: { type: "string", enum: ["papel","plastico","vidro","metal","organico","eletronico","pilhas","oleo"] },
+              example: ["papel","plastico","vidro"],
             },
             horarioFuncionamento: {
               type: "object",
@@ -107,18 +102,9 @@ const swaggerOptions = {
                 longitude: { type: "number", example: -46.6333 },
               },
             },
-            ativo: {
-              type: "boolean",
-              default: true,
-            },
-            telefone: {
-              type: "string",
-              example: "(11) 1234-5678",
-            },
-            observacoes: {
-              type: "string",
-              example: "Aceita grandes volumes de resíduos",
-            },
+            ativo: { type: "boolean", default: true },
+            telefone: { type: "string", example: "(11) 1234-5678" },
+            observacoes: { type: "string", example: "Aceita grandes volumes de resíduos" },
           },
         },
         Error: {
@@ -145,10 +131,7 @@ app.use("/api/ecopontos", ecopontoRoutes);
 app.get("/", (req, res) => {
   res.json({
     message: "API Ecopontos - Documentação disponível em /api-docs",
-    endpoints: {
-      ecopontos: "/api/ecopontos",
-      documentacao: "/api-docs",
-    },
+    endpoints: { ecopontos: "/api/ecopontos", documentacao: "/api-docs" },
   });
 });
 
