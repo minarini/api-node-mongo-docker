@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 import ecopontoRoutes from "./routes/ecopontoRoutes.js";
@@ -8,6 +9,8 @@ import ecopontoRoutes from "./routes/ecopontoRoutes.js";
 dotenv.config(); // Carrega variáveis do .env
 
 const app = express();
+
+app.use(cors()); // permite todas as origens por padrão
 app.use(express.json());
 
 // Conexão com MongoDB
@@ -58,6 +61,7 @@ const swaggerOptions = {
     },
     servers: [
       { url: `http://localhost:${process.env.PORT || 3000}`, description: "Servidor de desenvolvimento" },
+      ...(process.env.API_URL ? [{ url: process.env.API_URL, description: "Servidor de produção" }] : []),
     ],
     components: {
       schemas: {
