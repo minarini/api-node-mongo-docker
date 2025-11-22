@@ -50,6 +50,16 @@ mongoose.connect(mongoUrl)
   });
 
 // Configuração do Swagger
+const PORT = process.env.PORT || 3000;
+// Detecta automaticamente a URL base (útil para Render, Railway, etc)
+const getBaseUrl = () => {
+  if (process.env.API_URL) return process.env.API_URL;
+  if (process.env.RENDER_EXTERNAL_URL) return process.env.RENDER_EXTERNAL_URL;
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  return `http://localhost:${PORT}`;
+};
+const API_URL = getBaseUrl();
+
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -60,8 +70,7 @@ const swaggerOptions = {
       contact: { name: "Suporte API" },
     },
     servers: [
-      { url: `http://localhost:${process.env.PORT || 3000}`, description: "Servidor de desenvolvimento" },
-      ...(process.env.API_URL ? [{ url: process.env.API_URL, description: "Servidor de produção" }] : []),
+      { url: API_URL, description: "Servidor atual" },
     ],
     components: {
       schemas: {
@@ -126,7 +135,10 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "API Ecopontos - Documentação",
+}));
 
 // Rotas
 app.use("/api/ecopontos", ecopontoRoutes);
@@ -140,8 +152,7 @@ app.get("/", (req, res) => {
 });
 
 // Servidor
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`Documentação disponível em http://localhost:${PORT}/api-docs`);
+  console.log(`Documentação disponível em ${API_URL}/api-docs`);
 });
