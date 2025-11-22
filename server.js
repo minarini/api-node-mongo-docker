@@ -10,11 +10,10 @@ const app = express();
 app.use(express.json());
 
 // Conexão com MongoDB
-const MONGO_URI = process.env.MONGO_URI || "mongodb://mongodb:27017/ecopontos";
 console.log(`\nTentando conectar ao MongoDB...`);
 console.log(`MONGO_URI: ${MONGO_URI.replace(/\/\/.*@/, "//***:***@")}`);
-
-mongoose.connect(MONGO_URI)
+  
+mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
   const dbName = mongoose.connection.db.databaseName;
   const collections = await mongoose.connection.db.listCollections().toArray();
