@@ -3,14 +3,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://mongodb:27017/ecopontos";
+const MONGO_URL = process.env.MONGO_URL || "mongodb://mongodb:27017/ecopontos";
 
 async function verificarMongoDB() {
   try {
     console.log("Conectando ao MongoDB...");
-    console.log(`URI: ${MONGO_URI.replace(/\/\/.*@/, "//***:***@")}`); // Ocultar credenciais
+    console.log(`URI: ${MONGO_URL.replace(/\/\/.*@/, "//***:***@")}`); // Ocultar credenciais
     
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(MONGO_URL);
 
     const db = mongoose.connection.db;
     const dbName = db.databaseName;

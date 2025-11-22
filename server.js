@@ -11,7 +11,7 @@ app.use(express.json());
 
 // Conexão com MongoDB
 console.log(`\nTentando conectar ao MongoDB...`);
-console.log(`MONGO_URI: ${MONGO_URI.replace(/\/\/.*@/, "//***:***@")}`);
+console.log(`MONGO_URL: ${MONGO_URL.replace(/\/\/.*@/, "//***:***@")}`);
   
 mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
