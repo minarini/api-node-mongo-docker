@@ -299,77 +299,11 @@ const PORT = process.env.PORT || 3000;
 
 O código já está configurado corretamente!
 
-### Deploy no Railway
-
-#### 1. Conectar repositório
-1. Acesse: https://railway.app
-2. Clique em "New Project" → "Deploy from GitHub repo"
-3. Selecione seu repositório
-
-#### 2. Configurar variáveis
-1. Vá em "Variables" e adicione:
-   - `PORT`: `${{PORT}}` (Railway fornece automaticamente)
-   - `MONGO_URI`: Sua string de conexão do MongoDB Atlas
-   - `NODE_ENV`: `production`
-
-#### 3. Deploy automático
-- O Railway detecta automaticamente o Node.js e faz o deploy
-- Sua API estará disponível em: `https://seu-app.railway.app`
-
-### Deploy no Cyclic
-
-#### 1. Conectar repositório
-1. Acesse: https://cyclic.sh
-2. Faça login com GitHub
-3. Clique em "Connect Repository"
-4. Selecione seu repositório
-
-#### 2. Configurar variáveis
-1. No painel do Cyclic, vá em "Environment Variables"
-2. Adicione:
-   - `MONGO_URI`: Sua string de conexão do MongoDB Atlas
-   - `NODE_ENV`: `production`
-
-#### 3. Deploy
-- O Cyclic faz deploy automático a cada push no GitHub
-- Sua API estará disponível em: `https://seu-app.cyclic.app`
-
-### Testando a API em produção
-
-Após o deploy, teste a API:
-
-```bash
-# Exemplo com Render
-curl https://seu-app.onrender.com/api/ecopontos
-
 # Acessar documentação Swagger
 # https://seu-app.onrender.com/api-docs
-```
 
-### Importante para Deploy
-
-1. **Atualizar URL do Swagger no código** (opcional):
-   No arquivo `server.js`, atualize a configuração do Swagger para incluir a URL de produção:
-
-```javascript
-servers: [
-  {
-    url: `http://localhost:${process.env.PORT || 3000}`,
-    description: "Servidor de desenvolvimento",
-  },
-  {
-    url: process.env.API_URL || "https://seu-app.onrender.com",
-    description: "Servidor de produção",
-  },
-]
-```
-
-2. **CORS** (se necessário):
-   Se precisar acessar a API de um front-end, instale e configure CORS:
-
-```bash
-npm install cors
-```
+2. **CORS**:
+   Pra acessar a API do FrontEnd na nuvem foi necessário instalar o CORS:
 
 ```javascript
 import cors from "cors";
